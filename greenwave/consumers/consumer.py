@@ -4,6 +4,7 @@ import requests
 
 import fedora_messaging.api
 import fedora_messaging.exceptions
+from opentelemetry.trace.propagation import get_current_span
 
 import greenwave.app_factory
 import greenwave.decision
@@ -17,6 +18,9 @@ from greenwave.monitor import (
 )
 from greenwave.policies import applicable_decision_context_product_version_pairs
 from greenwave.utils import right_before_this_time
+
+
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 log = logging.getLogger(__name__)
 
@@ -61,6 +65,7 @@ class Consumer:
     hub_config_prefix = 'greenwave_consumer_'
     default_topic = 'item.new'
     monitor_labels = {'handler': 'greenwave_consumer'}
+    context = None
 
     def __init__(self, hub, *args, **kwargs):
         """
@@ -92,6 +97,7 @@ class Consumer:
         try:
             message = message.get('body', message)
             log.debug('Processing message "%s"', message)
+            self.context = TraceContextTextMapPropagator().extract(message)
 
             with self.flask_app.app_context():
                 self._consume_message(message)
@@ -108,6 +114,12 @@ class Consumer:
 
     def _publish_decision_update_fedora_messaging(self, decision):
         try:
+            TraceContextTextMapPropagator().inject(decision, self.context)
+            span = get_current_span(context=self.context).get_span_context()
+            if span.trace_id:
+                decision["trace_id"] = span.trace_id
+            if span.span_id:
+                decision["span_id"] = span.span_id
             msg = fedora_messaging.api.Message(
                 topic='greenwave.decision.update',
                 body=decision
