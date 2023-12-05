@@ -16,7 +16,8 @@ def build_arg_parser(description):
         "--topic",
         "-t",
         required=True,
-        help="Single topic name to publish message to. Example VirtualTopic.eng.ci.mkovarik-namespace.container-image.test.running",
+        help="Single topic name to publish message to. "
+             "Example VirtualTopic.eng.ci.mkovarik-namespace.container-image.test.running"
     )
     parser.add_argument(
         "-p",
@@ -54,7 +55,8 @@ def build_arg_parser(description):
 
 if __name__ == "__main__":
     parser = build_arg_parser(
-        "Send custom UMB message to selected UMB topic. Sends demo message when arguments are not specified"
+        "Send custom UMB message to selected UMB topic. "
+        "Sends demo message when arguments are not specified"
     )
     args = parser.parse_args()
     with open(args.path_to_message) as fp:

@@ -4,7 +4,6 @@ import requests
 
 import fedora_messaging.api
 import fedora_messaging.exceptions
-from opentelemetry.trace.propagation import get_current_span
 
 import greenwave.app_factory
 import greenwave.decision
@@ -115,11 +114,6 @@ class Consumer:
     def _publish_decision_update_fedora_messaging(self, decision):
         try:
             TraceContextTextMapPropagator().inject(decision, self.context)
-            span = get_current_span(context=self.context).get_span_context()
-            if span.trace_id:
-                decision["trace_id"] = span.trace_id
-            if span.span_id:
-                decision["span_id"] = span.span_id
             msg = fedora_messaging.api.Message(
                 topic='greenwave.decision.update',
                 body=decision

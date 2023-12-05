@@ -8,7 +8,6 @@ import uuid
 
 import stomp
 from opentelemetry.context import Context
-from opentelemetry.trace.propagation import get_current_span
 from requests.exceptions import HTTPError
 
 import greenwave.app_factory
@@ -216,7 +215,6 @@ class BaseListener(stomp.ConnectionListener):
         TraceContextTextMapPropagator().inject(decision, self.context)
         message = {"msg": decision, "topic": self.destination}
         body = json.dumps(message)
-        span = get_current_span(context=self.context).get_span_context()
         while True:
             try:
                 headers = {
@@ -228,10 +226,6 @@ class BaseListener(stomp.ConnectionListener):
                     "summary": decision["summary"],
 
                 }
-                if span.trace_id:
-                    headers["trace_id"] = span.trace_id
-                if span.span_id:
-                    headers["span_id"] = span.span_id
                 if decision.get("traceparent", None):
                     headers["traceparent"] = decision["traceparent"]
 
