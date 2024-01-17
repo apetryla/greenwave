@@ -51,6 +51,18 @@ def _requests_timeout():
     return timeout
 
 
+def _raise_for_status(response):
+    if response.ok:
+        return
+
+    msg = (
+        f"Got unexpected status code {response.status_code} for"
+        f" {response.url}: {response.text}"
+    )
+    log.error(msg)
+    raise BadGateway(msg)
+
+
 class BaseRetriever:
     ignore_ids: List[int]
     url: str
@@ -72,7 +84,7 @@ class BaseRetriever:
 
     def _retrieve_data(self, params):
         response = self._make_request(params)
-        response.raise_for_status()
+        _raise_for_status(response)
         return response.json()['data']
 
 
@@ -289,5 +301,5 @@ def retrieve_yaml_remote_rule(url: str):
 
     # remote rule file found...
     response = requests_session.request('GET', url)
-    response.raise_for_status()
+    _raise_for_status(response)
     return response.content
