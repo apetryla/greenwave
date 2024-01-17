@@ -223,7 +223,6 @@ class BaseListener(stomp.ConnectionListener):
                     "decision_context": decision["decision_context"],
                     "policies_satisfied": str(decision["policies_satisfied"]).lower(),
                     "summary": decision["summary"],
-
                 }
                 self.connection.send(
                     body=body, headers=headers, destination=self.destination
