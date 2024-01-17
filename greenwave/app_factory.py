@@ -72,4 +72,3 @@ def healthcheck():
     Returns a 200 response if the application is alive and able to serve requests.
     """
     return 'Health check OK', 200, [('Content-Type', 'text/plain')]
-
